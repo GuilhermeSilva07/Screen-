@@ -1,6 +1,7 @@
 package br.com.alura.screenmatch.model;
 
 import br.com.alura.screenmatch.service.ConsultaChatGPT;
+import br.com.alura.screenmatch.service.traducao.ConsultaMyMemory;
 import com.fasterxml.jackson.annotation.JsonAlias;
 
 import java.util.Optional;
@@ -22,7 +23,10 @@ public class Serie {
         this.genero = Categoria.fromString(dadosSerie.genero().split(",")[0].trim());
         this.atores = dadosSerie.atores();
         this.poster = dadosSerie.poster();
-        this.sinopse = ConsultaChatGPT.obterTraducao(dadosSerie.sinopse()).trim(); //não esta acontecendo tradução - conta sem creditos.
+        //this.sinopse = ConsultaChatGPT.obterTraducao(dadosSerie.sinopse()).trim(); //não esta acontecendo tradução - conta sem creditos.
+
+        //USANDO NOVA API DE TRADUÇAÕ
+        this.sinopse = ConsultaMyMemory.obterTraducao(dadosSerie.sinopse()).trim();
     }
 
     public String getTitulo() {
