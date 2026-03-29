@@ -1,20 +1,35 @@
 package br.com.alura.screenmatch.model;
 
+import br.com.alura.screenmatch.repository.SerieRepository;
 import br.com.alura.screenmatch.service.ConsultaChatGPT;
 import br.com.alura.screenmatch.service.traducao.ConsultaMyMemory;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 
+@Entity                 // → diz que é uma tabela
+@Table(name = "series") // → define o nome da tabela
 public class Serie {
+    @Id                 // → chave primária
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // → auto increment
+    private Long id;
+    @Column(unique = true)  // → coluna com restrição de unicidade
     private String titulo;
     private Integer totalTemporadas;
     private double avaliacao;
+    @Enumerated(EnumType.STRING)  // → salva o enum como texto no banco
     private Categoria genero;
     private String atores;
     private String poster;
     private String sinopse;
+    @Transient
+    private List<Episodio> episodios = new ArrayList<>();
+
+    public Serie() {}
 
     public Serie(DadosSerie dadosSerie){
         this.titulo = dadosSerie.titulo();
@@ -27,6 +42,21 @@ public class Serie {
 
         //USANDO NOVA API DE TRADUÇAÕ
         this.sinopse = ConsultaMyMemory.obterTraducao(dadosSerie.sinopse()).trim();
+    }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public List<Episodio> getEpisodios() {
+        return episodios;
+    }
+
+    public void setEpisodios(List<Episodio> episodios) {
+        this.episodios = episodios;
     }
 
     public String getTitulo() {
