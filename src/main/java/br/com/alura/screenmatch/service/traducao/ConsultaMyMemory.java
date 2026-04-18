@@ -15,7 +15,7 @@ public class ConsultaMyMemory {
         String texto = URLEncoder.encode(text);
         String langpair = URLEncoder.encode("en|pt-br");
 
-        String url = "https://api.mymemory.translated.net/get?q=" + texto + "&langpair=" + langpair;
+        String url = "https://api.mymemory.translated.net/get?q=" + texto + "&langpair=" + langpair; //possivel melhoria para conter paramentros de segurança dentro da aplicação - usar variaveis de ambiente
 
         String json = consumo.obterDados(url);
 
