@@ -1,9 +1,6 @@
 package br.com.alura.screenmatch.principal;
 
-import br.com.alura.screenmatch.model.DadosSerie;
-import br.com.alura.screenmatch.model.DadosTemporada;
-import br.com.alura.screenmatch.model.Episodio;
-import br.com.alura.screenmatch.model.Serie;
+import br.com.alura.screenmatch.model.*;
 import br.com.alura.screenmatch.repository.SerieRepository;
 import br.com.alura.screenmatch.service.ConsumoApi;
 import br.com.alura.screenmatch.service.ConverteDados;
@@ -37,6 +34,11 @@ public class Principal {
                     1 - Buscar séries
                     2 - Buscar episódios
                     3 - Listar series buscadas
+                    4 - Buscar serie por titulo
+                    5 - Buscar series por ator
+                    6 - Top 5 Series
+                    7 - Buscar series por categoria
+                    8 - Buscar series por Temporadas e Avaliação
                     
                     0 - Sair                                 
                     """;
@@ -55,6 +57,21 @@ public class Principal {
                 case 3:
                     listarSeriesBuscadas();
                     break;
+                case 4:
+                    buscarSeriePorTitulo();
+                    break;
+                case 5:
+                    buscarSeriesPorAtor();
+                    break;
+                case 6:
+                    buscarTopSeries();
+                    break;
+                case 7:
+                    buscarSeriesPorCategoria();
+                    break;
+                case 8:
+                    buscarSeriesPorTemporadasEAvaliacao();
+                    break;
                 case 0:
                     System.out.println("Saindo...");
                     break;
@@ -63,6 +80,7 @@ public class Principal {
             }
         }
     }
+
 
     private void buscarSerieWeb() {
         DadosSerie dados = getDadosSerie();
@@ -86,9 +104,7 @@ public class Principal {
         System.out.println("Escolha uma serie pelo nome: ");
         var nomeSerie = leitura.nextLine();
 
-        Optional<Serie> serie = series.stream()
-                .filter(s -> s.getTitulo().toLowerCase().contains(nomeSerie.toLowerCase()))
-                .findFirst();
+        Optional<Serie> serie = repository.findByTituloContainingIgnoreCase(nomeSerie);  //buscando direto do banco
 
         if(serie.isPresent()){
 
@@ -119,5 +135,60 @@ public class Principal {
         series.stream()
                 .sorted(Comparator.comparing(Serie::getGenero))
                 .forEach(System.out::println);
+    }
+
+    private void buscarSeriePorTitulo() {
+        System.out.println("Escolha uma serie pelo nome: ");
+        var nomeSerie = leitura.nextLine();
+        Optional<Serie> serieBuscada = repository.findByTituloContainingIgnoreCase(nomeSerie);
+
+        if (serieBuscada.isPresent()){
+            System.out.println("Dados da serie: " + serieBuscada.get());
+        }else {
+            System.out.println("Serie não encontrada!");
+        }
+    }
+
+
+    private void buscarSeriesPorAtor(){
+        System.out.println("Qual o nome para busca?");
+        var nomeAtor = leitura.nextLine();
+        System.out.println("Avaliaçoes a partir de qual valor? ");
+        var avalicao = leitura.nextDouble();
+        List<Serie> seriesEncontradas = repository.findByAtoresContainingIgnoreCaseAndAvaliacaoGreaterThanEqual(nomeAtor, avalicao);
+        System.out.println("Series em que " + nomeAtor + " teve participação ");
+        seriesEncontradas.forEach(s ->
+                System.out.println(s.getTitulo() + " avaliação: " + s.getAvaliacao()));
+    }
+
+    private void buscarTopSeries(){
+        List<Serie> serieTop = repository.findTop5ByOrderByAvaliacaoDesc();
+        serieTop.forEach(s ->
+                System.out.println(s.getTitulo() + " avaliação: " + s.getAvaliacao()));
+    }
+
+
+    private void buscarSeriesPorCategoria(){
+        System.out.println("Deseja buscar series de que categoria/genero? ");
+        var nomeGenero = leitura.nextLine();
+        Categoria categoria = Categoria.fromPortugues(nomeGenero);
+        List<Serie> seriesPorCategoria = repository.findBygenero(categoria);
+        System.out.println("Series da categoria " + nomeGenero);
+        seriesPorCategoria.forEach(System.out::println);
+    }
+
+    private void buscarSeriesPorTemporadasEAvaliacao(){
+        System.out.println("Até quantas temporadas ?");
+        var totalTemporadas = leitura.nextInt();
+        System.out.println("Com avaliação a apartir de qual valor? ");
+        var avaliacao = leitura.nextDouble();
+        leitura.nextLine();
+
+
+        List<Serie> series = repository.findByTotalTemporadasLessThanEqualAndAvaliacaoGreaterThanEqual(totalTemporadas, avaliacao);
+
+        series.forEach(s -> System.out.println(s.getTitulo()
+                + " | Temporadas: " + s.getTotalTemporadas()
+                + " | Avaliação: " + s.getAvaliacao()));
     }
 }
